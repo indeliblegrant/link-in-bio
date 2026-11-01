@@ -9,6 +9,25 @@ function ProfileForm({ profile, onChange }) {
       </h3>
 
       <div>
+        <label htmlFor="username" className="mb-1 block text-sm font-medium text-gray-700">
+          Username
+        </label>
+        <input
+          id="username"
+          type="text"
+          placeholder="yourname"
+          value={profile.username}
+          onChange={(e) =>
+            onChange('username', e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))
+          }
+          className={inputClass}
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Your public page: /u/{profile.username || '...'}
+        </p>
+      </div>
+
+      <div>
         <label htmlFor="displayName" className="mb-1 block text-sm font-medium text-gray-700">
           Display name
         </label>

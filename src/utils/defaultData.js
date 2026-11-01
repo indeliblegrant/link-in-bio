@@ -1,4 +1,5 @@
 export const defaultProfile = {
+  username: 'ada',
   name: 'Ada Okafor',
   bio: 'Designer & developer sharing what I build and learn.',
   avatar: 'https://i.pravatar.cc/200?img=47',

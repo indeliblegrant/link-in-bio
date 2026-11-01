@@ -1,11 +1,17 @@
-import AdminPanel from './components/AdminPanel'
-import PhonePreview from './components/PhonePreview'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import AdminPage from './pages/AdminPage'
+import PublicPage from './pages/PublicPage'
+import NotFoundPage from './pages/NotFoundPage'
 import useLocalStorage from './hooks/useLocalStorage'
 import { defaultProfile, defaultLinks } from './utils/defaultData'
 
 function App() {
-  const [profile, setProfile] = useLocalStorage('linkinbio-profile', defaultProfile)
+  const [storedProfile, setProfile] = useLocalStorage('linkinbio-profile', defaultProfile)
   const [links, setLinks] = useLocalStorage('linkinbio-links', defaultLinks)
+  const [clicks, setClicks] = useLocalStorage('linkinbio-clicks', [])
+
+  // Older saved profiles have no username, so fill gaps from the defaults
+  const profile = { ...defaultProfile, ...storedProfile }
 
   const handleProfileChange = (field, value) => {
     setProfile({ ...profile, [field]: value })
@@ -21,6 +27,7 @@ function App() {
 
   const handleDeleteLink = (id) => {
     setLinks(links.filter((link) => link.id !== id))
+    setClicks(clicks.filter((click) => click.linkId !== id))
   }
 
   // direction is -1 (up) or 1 (down)
@@ -32,29 +39,45 @@ function App() {
     setLinks(copy)
   }
 
-  return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8">
-      <h1 className="text-center text-3xl font-bold text-gray-900">
-        Link in Bio
-      </h1>
+  const handleRecordClick = (linkId) => {
+    setClicks([...clicks, { linkId, timestamp: new Date().toISOString() }])
+  }
 
-      <div className="mx-auto mt-8 flex max-w-5xl flex-col gap-8 lg:flex-row lg:items-start">
-        <div className="w-full lg:flex-1">
-          <AdminPanel
+  const handleResetClicks = () => {
+    setClicks([])
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/admin" replace />} />
+      <Route
+        path="/admin"
+        element={
+          <AdminPage
             profile={profile}
             onProfileChange={handleProfileChange}
             links={links}
+            clicks={clicks}
             onAddLink={handleAddLink}
             onUpdateLink={handleUpdateLink}
             onDeleteLink={handleDeleteLink}
             onMoveLink={handleMoveLink}
+            onResetClicks={handleResetClicks}
           />
-        </div>
-        <div className="flex w-full justify-center lg:flex-1">
-          <PhonePreview profile={profile} links={links} />
-        </div>
-      </div>
-    </div>
+        }
+      />
+      <Route
+        path="/u/:username"
+        element={
+          <PublicPage
+            profile={profile}
+            links={links}
+            onRecordClick={handleRecordClick}
+          />
+        }
+      />
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
   )
 }
 
