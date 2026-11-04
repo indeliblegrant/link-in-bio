@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import AuthForm from '../components/AuthForm'
 
 const tabs = [
@@ -8,7 +8,9 @@ const tabs = [
 ]
 
 function AuthPage() {
-  const [mode, setMode] = useState('register')
+  const [searchParams] = useSearchParams()
+  // /auth?mode=login opens the Sign in tab (used when your login is missing or has expired)
+  const [mode, setMode] = useState(searchParams.get('mode') === 'login' ? 'login' : 'register')
   const navigate = useNavigate()
 
   return (

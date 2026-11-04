@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { isValidUrl } from '../utils/isValidUrl'
 
-const inputBase =
-  'w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2'
-const inputOk =
-  'border-gray-300 focus:border-indigo-500 focus:ring-indigo-200'
+const inputBase = 'w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2'
+const inputOk = 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-200'
 const inputBad = 'border-red-500 focus:ring-red-200'
 
 function LinkForm({
@@ -17,14 +15,16 @@ function LinkForm({
   const [title, setTitle] = useState(initialTitle)
   const [url, setUrl] = useState(initialUrl)
   const [errors, setErrors] = useState({})
+  const [isSaving, setIsSaving] = useState(false)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
 
     const cleanTitle = title.trim()
     const cleanUrl = url.trim()
     const newErrors = {}
 
+    // Quick checks first, so obvious mistakes never leave the browser
     if (!cleanTitle) newErrors.title = 'Title is required.'
     if (!isValidUrl(cleanUrl)) {
       newErrors.url = 'URL must start with http:// or https://'
@@ -33,13 +33,29 @@ function LinkForm({
     setErrors(newErrors)
     if (Object.keys(newErrors).length > 0) return
 
-    onSubmit({ title: cleanTitle, url: cleanUrl })
-    setTitle('')
-    setUrl('')
+    setIsSaving(true)
+
+    try {
+      await onSubmit({ title: cleanTitle, url: cleanUrl })
+      setTitle('')
+      setUrl('')
+    } catch (error) {
+      // The server checks everything again. Show what it says.
+      const fields = error.fields || {}
+      setErrors(Object.keys(fields).length > 0 ? fields : { form: error.message })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-3">
+      {errors.form && (
+        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+          {errors.form}
+        </p>
+      )}
+
       <label className="block">
         <span className="mb-1 block text-sm font-medium text-gray-700">Title</span>
         <input
@@ -73,15 +89,17 @@ function LinkForm({
       <div className="flex gap-2">
         <button
           type="submit"
-          className="rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700"
+          disabled={isSaving}
+          className="rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {submitLabel}
+          {isSaving ? 'Saving…' : submitLabel}
         </button>
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-100"
+            disabled={isSaving}
+            className="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60"
           >
             Cancel
           </button>

@@ -14,8 +14,9 @@ function LinkItem({ link, isFirst, isLast, onUpdate, onDelete, onMoveUp, onMoveD
           initialTitle={link.title}
           initialUrl={link.url}
           submitLabel="Save"
-          onSubmit={(changes) => {
-            onUpdate(link.id, changes)
+          onSubmit={async (changes) => {
+            // If the server says no, this throws and the form stays open with the error
+            await onUpdate(link.id, changes)
             setIsEditing(false)
           }}
           onCancel={() => setIsEditing(false)}

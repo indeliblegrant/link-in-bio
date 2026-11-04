@@ -4,7 +4,9 @@ import LinkList from './LinkList'
 
 function AdminPanel({
   profile,
+  hasChanges,
   onProfileChange,
+  onSaveProfile,
   links,
   onAddLink,
   onUpdateLink,
@@ -15,7 +17,12 @@ function AdminPanel({
     <div className="space-y-6 rounded-2xl bg-white p-6 shadow">
       <h2 className="text-xl font-semibold text-gray-900">Editor</h2>
 
-      <ProfileForm profile={profile} onChange={onProfileChange} />
+      <ProfileForm
+        profile={profile}
+        hasChanges={hasChanges}
+        onChange={onProfileChange}
+        onSave={onSaveProfile}
+      />
 
       <section className="space-y-3">
         <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
